@@ -1,5 +1,5 @@
 Documentation for the NASA IDS change analysis
-Poley 10/21/2021
+- Poley 10/21/2021
 
 
 Required python packages:
@@ -12,6 +12,7 @@ Required python packages:
 - math
 - itertools
 - fiona
+
 
 Processing steps:
 1. Reclassify land cover change for year 1 and 2 into IDS change classes:
@@ -41,3 +42,9 @@ Processing steps:
 9. Run 'mosaic_tiles.py'
 10. Manually check outputs from hybrid change results and modify thresholds
     as needed. Repeat this process several of times.
+
+
+Notes:
+- Images MUST have the same number of rows & columns to run scripts
+- It can be helpful to mosaic output of 'zonal_stats_raster.py' to observe mean
+radiometric change when determining change thresholds.
