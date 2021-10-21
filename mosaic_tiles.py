@@ -1,3 +1,7 @@
+# Mosaic image tiles into single image
+# Input: directory of image tiles, output mosaic image file path
+# Poley 10/21/21
+
 import glob
 import rasterio
 from rasterio.merge import merge
