@@ -1,0 +1,146 @@
+// Script to make change vector analysis using Landtrendr in Google Earth Engine (GEE)
+// To use: copy script into GEE, create geometry feature by uploading shapefile, define date ranges
+// If using geometry from drawn polygon in GEE, uncomment line 22 and comment out line 21
+
+///////////// Change Vector Analysis using fit-to-vertice (FTV) imagery produced from Landtrendr //////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// load the LandTrendr.js module
+var ltgee = require('users/emaprlab/public:Modules/LandTrendr.js');
+
+// define parameters
+var y1 = '1985'
+var y2 = '1995'
+var y3 = '1986'   // cloud fill for y1
+var y4 = '1994'   // cloud fill for y2
+
+var startYear = 1985;
+var endYear = 2018;
+var startDay = '08-01';
+var endDay = '10-30';
+var aoi = geometry;
+// var aoi = tier1.geometry().bounds();
+var index = 'TCB';
+var ftvList = ['TCG','TCW','NDVI','TCB','NDMI'];
+var maskThese = ['cloud','shadow', 'snow'] //, 'water']; //masking water hurts coastal wetland analysis
+var runParams = {
+  maxSegments:            6,
+  spikeThreshold:         0.9,
+  vertexCountOvershoot:   3,
+  preventOneYearRecovery: true,
+  recoveryThreshold:      0.25,
+  pvalThreshold:          0.05,
+  bestModelProportion:    0.75,
+  minObservationsNeeded:  6
+};
+
+// center and zoom the display in case outputs are to be mapped
+// Map.centerObject(aoi,10);
+// Map.addLayer(aoi);
+
+
+// apply LandTrendr.js functions
+var lt = ltgee.runLT(startYear, endYear, startDay, endDay, aoi, index, ftvList, runParams,maskThese);
+var tcgFTV = ltgee.getFittedData(lt, startYear, endYear, ftvList[0]);
+var tcwFTV = ltgee.getFittedData(lt, startYear, endYear, ftvList[1]);
+var ndviFTV = ltgee.getFittedData(lt, startYear, endYear, ftvList[2]);
+var tcbFTV = ltgee.getFittedData(lt, startYear, endYear, ftvList[3]);
+var ndmiFTV = ltgee.getFittedData(lt, startYear, endYear, ftvList[4]);
+
+
+var ndvi2 = ndviFTV.select([y1],['NDVI'])
+var tcg2 = tcgFTV.select([y1],['TCG'])
+var tcb2 = tcbFTV.select([y1],['TCB'])
+var tcw2 = tcwFTV.select([y1],['TCW'])
+
+var ndvi3 = ndviFTV.select([y2],['NDVI'])
+var tcg3 = tcgFTV.select([y2],['TCG'])
+var tcb3 = tcbFTV.select([y2],['TCB'])
+var tcw3 = tcwFTV.select([y2],['TCW'])
+
+var ndvi4 = ndviFTV.select([y3],['NDVI'])
+var tcg4 = tcgFTV.select([y3],['TCG'])
+var tcb4 = tcbFTV.select([y3],['TCB'])
+var tcw4 = tcwFTV.select([y3],['TCW'])
+
+var ndvi5 = ndviFTV.select([y4],['NDVI'])
+var tcg5 = tcgFTV.select([y4],['TCG'])
+var tcb5 = tcbFTV.select([y4],['TCB'])
+var tcw5 = tcwFTV.select([y4],['TCW'])
+
+var ndvi_start = ndvi2.unmask(ndvi4)
+var tcg_start = tcg2.unmask(tcg4)
+var tcb_start = tcb2.unmask(tcb4)
+var tcw_start = tcw2.unmask(tcw4)
+
+var ndvi_end = ndvi3.unmask(ndvi5)
+var tcg_end = tcg3.unmask(tcg5)
+var tcb_end = tcb3.unmask(tcb5)
+var tcw_end = tcw3.unmask(tcw5)
+
+// Composite bands into an image stack
+var composite_start = ndvi_start.addBands(tcb_start).addBands(tcg_start).addBands(tcw_start)
+//print(composite1984,'1984 composite')
+
+var composite_end = ndvi_end.addBands(tcb_end).addBands(tcg_end).addBands(tcw_end)
+//print(composite1995,'1995 composite')
+
+//Map.addLayer(ndvi_start, vis, 'ndvi')
+//Map.addLayer(ndvi2, vis, 'ndvi')
+//Map.addLayer(ndvi4, vis, 'ndvi')
+
+///////////////////////////////// Change vector analysis ///////////////////////////////////////////////
+
+//Calculate magnitude of change
+var dif = composite_end.subtract(composite_start);
+var squared = dif.multiply(dif);
+var summed = squared.reduce(ee.Reducer.sum());
+var magnitude1 = summed.sqrt();
+//print(magnitude1, 'mag1');
+
+//Map.addLayer(aoi)
+// Map.addLayer(magnitude1.clip(aoi), visual)
+
+/*
+//Calculate direction of change
+var product = composite_end.multiply(composite_start)
+var product_sum = product.reduce(ee.Reducer.sum())
+
+var end_mag = (composite_end.multiply(composite_end))
+end_mag = end_mag.reduce(ee.Reducer.sum())
+
+var start_mag = (composite_start.multiply(composite_start))
+start_mag = start_mag.reduce(ee.Reducer.sum())
+
+var mag = end_mag.multiply(start_mag)
+
+var angle = product_sum.divide(mag)
+var direction = angle.acos()
+
+Map.addLayer(angle)
+*/
+
+var mag = magnitude1.toUint32()
+Map.addLayer(mag.clip(aoi), visual)
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                           Export                                                  //
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Export.image.toDrive({
+      image: magnitude1,
+      description: 'CVA3_FTV_1985_1995',
+      scale: 30,
+      region: aoi,
+  maxPixels: 1e10
+    });
+
+
+// Export.image.toAsset({
+//   image: magnitude1,
+//   description: 'CVA_FTV_1985_1996',
+//   scale: 30,
+//   region: aoi,
+//   maxPixels: 1e10
+// });
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
