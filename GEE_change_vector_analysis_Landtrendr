@@ -2,23 +2,48 @@
 // To use: copy script into GEE, create geometry feature by uploading shapefile, define date ranges
 // If using geometry from drawn polygon in GEE, uncomment line 22 and comment out line 21
 
+
 ///////////// Change Vector Analysis using fit-to-vertice (FTV) imagery produced from Landtrendr //////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+//////////start sample parameter imports///////////////////
+//////////skip to line 28 for start of change code/////////
+//import example geometry and visual parameters. can be edited here or in the layer tab on below map once imported
+//hover over and accept import suggestion
+var geometry =
+    /* color: #d63000 */
+    /* shown: false */
+    ee.Geometry.Polygon(
+        [[[-84.16221384261173, 43.744057151706286],
+          [-84.34348825667423, 43.42972821356172],
+          [-84.17869333479923, 43.2339400906857],
+          [-83.72825388167423, 43.293942262681114],
+          [-83.59641794417423, 43.62090856387956],
+          [-83.95896677229923, 43.7718299104832]]]),
+    vis = {"opacity":1,"bands":["NDVI"],"min":428,"max":987,"gamma":1},
+    visual = {"opacity":1,"bands":["sum"],"min":1,"max":2000,"gamma":1};
+////////////////////////////end sample parameters////////////////////////////////////
+
+
+///////////////////////////////start change code////////////////////////////////////
 // load the LandTrendr.js module
 var ltgee = require('users/emaprlab/public:Modules/LandTrendr.js');
 
-// define parameters
-var y1 = '1985'
-var y2 = '1995'
-var y3 = '1986'   // cloud fill for y1
-var y4 = '1994'   // cloud fill for y2
+// define parameters - change years
+var y1 = 'yr_1995'
+var y2 = 'yr_2010'
+var y3 = 'yr_1996'   // cloud fill for y1
+var y4 = 'yr_2009'   // cloud fill for y2
 
+// this is setting the season; year data will be pulled from
 var startYear = 1985;
-var endYear = 2018;
-var startDay = '08-01';
+var endYear = 2021;
+var startDay = '08-01'; //captures growing season and optimized for clouds(?)
 var endDay = '10-30';
 var aoi = geometry;
+
+
+//////////////////////////////////////////////////////////////
 // var aoi = tier1.geometry().bounds();
 var index = 'TCB';
 var ftvList = ['TCG','TCW','NDVI','TCB','NDMI'];
@@ -47,6 +72,7 @@ var ndviFTV = ltgee.getFittedData(lt, startYear, endYear, ftvList[2]);
 var tcbFTV = ltgee.getFittedData(lt, startYear, endYear, ftvList[3]);
 var ndmiFTV = ltgee.getFittedData(lt, startYear, endYear, ftvList[4]);
 
+//print(ndviFTV)
 
 var ndvi2 = ndviFTV.select([y1],['NDVI'])
 var tcg2 = tcgFTV.select([y1],['TCG'])
@@ -85,6 +111,10 @@ var composite_start = ndvi_start.addBands(tcb_start).addBands(tcg_start).addBand
 var composite_end = ndvi_end.addBands(tcb_end).addBands(tcg_end).addBands(tcw_end)
 //print(composite1995,'1995 composite')
 
+//uncomment below lines to visualize (add .clip so that it doesn't load in whole world)
+//need to display layer before you can set stretch 'vis'; update 'vis' in layer properties below on map screen
+//last param is name of displayed layer
+Map.addLayer(ndvi_start.clip(aoi), vis, 'ndvi')
 //Map.addLayer(ndvi_start, vis, 'ndvi')
 //Map.addLayer(ndvi2, vis, 'ndvi')
 //Map.addLayer(ndvi4, vis, 'ndvi')
@@ -120,8 +150,8 @@ var direction = angle.acos()
 Map.addLayer(angle)
 */
 
-var mag = magnitude1.toUint32()
-Map.addLayer(mag.clip(aoi), visual)
+var mag = magnitude1.toUint32();
+Map.addLayer(mag.clip(aoi),visual,'magnitude');
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 //                                           Export                                                  //
@@ -129,7 +159,7 @@ Map.addLayer(mag.clip(aoi), visual)
 
 Export.image.toDrive({
       image: magnitude1,
-      description: 'CVA3_FTV_1985_1995',
+      description: 'CVA3_FTV_1995_2010-TEST',
       scale: 30,
       region: aoi,
   maxPixels: 1e10
