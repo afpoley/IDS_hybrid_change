@@ -18,10 +18,15 @@ def open_raster(rst_fp):
     return rst, src_meta
 
 
+# Categorical change tiles
 fp = 'D:\\Users\\afpoley\\Desktop\\IDS_TEMP\\LCMAP\\MTRI_analysis\\1980_1995\\tile_change\\'
+# Clump tiles
 fp2 = 'D:\\Users\\afpoley\\Desktop\\IDS_TEMP\\LCMAP\\MTRI_analysis\\1980_1995\\tile_means\\'
+# Thresholds
 fp_csv = 'D:\\Users\\afpoley\\Desktop\\IDS_TEMP\\LCMAP\\MTRI_analysis\\1980_1995\\change_thresholds.csv'
+# Output directory
 out_fp = 'D:\\Users\\afpoley\\Desktop\\IDS_TEMP\\LCMAP\\MTRI_analysis\\1980_1995\\tile_hybrid\\'
+# Output filename
 out_file = 'hybrid_1985_1995_'
 
 change_ls = glob.glob(fp + '*tif')

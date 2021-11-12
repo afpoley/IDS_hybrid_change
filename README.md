@@ -32,10 +32,10 @@ Processing steps:
     * 12 = water
 3. Run 'categorical_change.py'
 4. Run 'clump.py' on categorical change
-5. Run 'tile_raster.py' two times (run outputs of 'clump.py' and 'GEE_change_vector_analysis_Landtrendr.py').
+5. Run 'tile_raster.py' three times (run outputs of 'clump.py', 'GEE_change_vector_analysis_Landtrendr.py', and 'categorical_change.py').
 6. Run 'zonal_stats_raster.py'
 7. Run 'unique_class_combinations.py'
-8. Manually set radiometric change thresholds for each available change class within categorical change product. Use CSV from step 7 to record threshold values in column 2. Look around image for real identifiable change, observe mean radiometric change values from 'zonal_stats_raster.py' output. 
+8. Manually set radiometric change thresholds for each available change class within categorical change product. Use CSV from step 7 to record threshold values in column 2. Look around image for real identifiable change, observe mean radiometric change values from 'zonal_stats_raster.py' output.
 9. Run 'CVA_threshold.py'
 10. Run 'mosaic_tiles.py'
 11. Manually check outputs from hybrid change results and modify thresholds as needed. Repeat this process several of times.
