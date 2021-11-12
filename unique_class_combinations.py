@@ -13,11 +13,11 @@ def open_raster(rst_fp):
     return img
 
 
-fp = 'D:\\Users\\afpoley\\Desktop\\IDS_TEMP\\LCMAP\\MTRI_analysis\\1995_2010\\catChange1995_2010.tif'
-out = 'D:\\Users\\afpoley\\Desktop\\IDS_TEMP\\LCMAP\\MTRI_analysis\\1995_2010\\change_thresholds.csv'
+fp = r'J:\project\NASA_smallsat_wetlands\training\hybrid_change\catChange1996_2010.tif'
+out = 'D:\\Users\\afpoley\\Desktop\\change_thresholds.csv'
 
 rst = open_raster(fp)
 classes = np.unique(rst)
 classes = classes.astype(int)
-np.savetxt(out, classes, delimiter=',')
+np.savetxt(out, classes, delimiter=',', header='class,threshold')
 
